@@ -11,45 +11,41 @@ from keras.layers import Dense, Conv1D, Flatten, SimpleRNN, MaxPooling1D, Global
 from keras.utils import to_categorical
 
 #Vectors and Data arrrays for each section of bits
-def load_data():
+def load_data(bit_num):
+    base_path = 'C:\\Users\\Matthew\\OneDrive\\Documents\\ECE577\\ECE-577-Proj4\\PRNG-Dataset'
     
-    #Initialize vectors
-    train_vector = validation_vector = test_vector = None, None, None  # Initialize variables
+    bit_dir = f"{bit_num}-bit"
     
-    # Depending on what # of bits looking to test
+    train_path = os.path.join(base_path, bit_dir, f"train_{bit_num}bit.txt")
+    validation_path = os.path.join(base_path, bit_dir, f"val_{bit_num}bit.txt")
+    test_path = os.path.join(base_path, bit_dir, f"test_{bit_num}bit.txt")
 
-    #32 Bits
-    train_vector = np.loadtxt('C:\\Users\\Matthew\\OneDrive\\Documents\\ECE577\\ECE-577-Proj4\\PRNG-Dataset\\32-bit\\train_32bit.txt', delimiter=',')
-    validation_vector = np.loadtxt('C:\\Users\\Matthew\\OneDrive\\Documents\\ECE577\\ECE-577-Proj4\\PRNG-Dataset\\32-bit\\val_32bit.txt', delimiter=',')
-    test_vector = np.loadtxt('C:\\Users\\Matthew\\OneDrive\\Documents\\ECE577\\ECE-577-Proj4\\PRNG-Dataset\\32-bit\\test_32bit.txt', delimiter=',')
+    train_data = np.genfromtxt(train_path, delimiter=',', invalid_raise=False)
+    validation_data = np.genfromtxt(validation_path, delimiter=',', invalid_raise=False)
+    test_data = np.genfromtxt(test_path, delimiter=',', invalid_raise=False)
 
-    #64 Bits
-    # train_vector = np.loadtxt('C:\\Users\\Matthew\\OneDrive\\Documents\\ECE577\\ECE-577-Proj4\\PRNG-Dataset\\64-bit\\train_64bit.txt', delimiter=',')
-    # validation_vector = np.loadtxt('C:\\Users\\Matthew\\OneDrive\\Documents\\ECE577\\ECE-577-Proj4\\PRNG-Dataset\\64-bit\\val_64bit.txt', delimiter=',')
-    # test_vector = np.loadtxt('C:\\Users\\Matthew\\OneDrive\\Documents\\ECE577\\ECE-577-Proj4\\PRNG-Dataset\\64-bit\\test_64bit.txt', delimiter=',')
+    # Handle missing labels by setting them to 0
+    train_data = np.nan_to_num(train_data, nan=0)
+    validation_data = np.nan_to_num(validation_data, nan=0)
+    test_data = np.nan_to_num(test_data, nan=0)
 
-    #128 Bits
-    # train_vector = np.loadtxt('C:\\Users\\Matthew\\OneDrive\\Documents\\ECE577\\ECE-577-Proj4\\PRNG-Dataset\\128-bit\\train_128bit.txt', delimiter=',')
-    # validation_vector = np.loadtxt('C:\\Users\\Matthew\\OneDrive\\Documents\\ECE577\\ECE-577-Proj4\\PRNG-Dataset\\128-bit\\val_128bit.txt', delimiter=',')
-    # test_vector = np.loadtxt('C:\\Users\\Matthew\\OneDrive\\Documents\\ECE577\\ECE-577-Proj4\\PRNG-Dataset\\128-bit\\test_128bit.txt', delimiter=',')
+    train_label = train_data[:, -1]
+    validation_label = validation_data[:, -1]
+    test_label = test_data[:, -1]
+
+    train_data_vectors = train_data[:, :-1]
+    validation_data_vectors = validation_data[:, :-1]
+    test_data_vectors = test_data[:, :-1]
+
+    vector_size = train_data_vectors.shape[1]
     
-    train_data = train_vector[:,:-1]
-    train_label = train_vector[:,-1]
-
-    validation_data = validation_vector[:,:-1]
-    validation_label = validation_vector[:,-1]
-
-    test_data = test_vector[:,:-1]
-    test_label = test_vector[:,-1]
-
-    vector_size = train_data.shape[1]
-    return train_data, train_label, validation_data, validation_label, test_data, test_label, vector_size
+    return train_data_vectors, train_label, validation_data_vectors, validation_label, test_data_vectors, test_label, vector_size
 
 #Run the models and get accuracy numbers
     
 def models_run(bit_num):
     print("Testing", bit_num,"- bit Data")
-    train_data, train_label, validation_data, validation_label, test_data, test_label, vector_size = load_data()
+    train_data, train_label, validation_data, validation_label, test_data, test_label, vector_size = load_data(bit_num)
     
     #SVM
     clf_svm = svm.SVC()
