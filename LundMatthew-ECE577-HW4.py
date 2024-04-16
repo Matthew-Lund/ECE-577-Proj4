@@ -5,12 +5,16 @@
 import numpy as np
 import os
 import sys
+
+#ML Algorithm Imports
 from sklearn import svm, neighbors, tree
 from keras.models import Sequential
-from keras.layers import Dense, Conv1D, Flatten, SimpleRNN, MaxPooling1D, GlobalAveragePooling1D
+from keras.layers import Dense, Conv1D, SimpleRNN, MaxPooling1D, GlobalAveragePooling1D
 from keras.utils import to_categorical
+import lightgbm as lgb
 
 #Vectors and Data arrrays for each section of bits
+
 def load_data(bit_num, dataset_path):
     base_path = dataset_path
     
@@ -38,61 +42,65 @@ def load_data(bit_num, dataset_path):
     test_data_vectors = test_data[:, :-1]
 
     vector_size = train_data_vectors.shape[1]
-    
-    return train_data_vectors, train_label, validation_data_vectors, validation_label, test_data_vectors, test_label, vector_size
+    output_path = os.path.join(base_path, bit_dir)
+    return output_path, train_data_vectors, train_label, validation_data_vectors, validation_label, test_data_vectors, test_label, vector_size
 
 #Run the models and get accuracy numbers
     
 def models_run(bit_num, dataset_path):
+    output_path, train_data, train_label, validation_data, validation_label, test_data, test_label, vector_size = load_data(bit_num, dataset_path)
     print("Testing", bit_num,"- bit Data")
-    train_data, train_label, validation_data, validation_label, test_data, test_label, vector_size = load_data(bit_num, dataset_path)
+   
+    #All data printed to output files:
+
+    output_file = os.path.join(output_path, f"results_{bit_num}bit.txt")
     
-    #SVM
-    clf_svm = svm.SVC()
-    clf_svm.fit(train_data, train_label)
-    print("SVM accuracy:", clf_svm.score(test_data, test_label))
+    with open(output_file, "w") as file:
 
-    #kNN
-    clf_knn = neighbors.KNeighborsClassifier()
-    clf_knn.fit(train_data, train_label)
-    print("kNN accuracy:", clf_knn.score(test_data, test_label))
+        #SVM
+        clf_svm = svm.SVC()
+        clf_svm.fit(train_data, train_label)
+        print("SVM accuracy:", clf_svm.score(test_data, test_label), file=file)
 
-    #Dec. Tree
-    clf_dt = tree.DecisionTreeClassifier()
-    clf_dt.fit(train_data, train_label)
-    print("Decision Tree accuracy:", clf_dt.score(test_data, test_label))
-    
-    #One-Hot Encoding for RNN and CNN
-    train_label -= 1
-    test_label -= 1
-    validation_label -= 1
-    train_label = to_categorical(train_label, num_classes=8)
-    test_label = to_categorical(test_label, num_classes=8)
-    validation_label = to_categorical(validation_label, num_classes=8)
+        #kNN
+        clf_knn = neighbors.KNeighborsClassifier()
+        clf_knn.fit(train_data, train_label)
+        print("kNN accuracy:", clf_knn.score(test_data, test_label), file=file)
 
-    #RNN
-    model_rnn = Sequential()
-    model_rnn.add(SimpleRNN(units=64, activation='relu', input_shape=(vector_size, 1)))
-    model_rnn.add(Dense(units=8, activation='softmax'))  #8 classes
-    model_rnn.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model_rnn.fit(train_data.reshape(train_data.shape[0], train_data.shape[1], 1), train_label, epochs=10, batch_size=32)
-    print("RNN accuracy:", model_rnn.evaluate(test_data.reshape(test_data.shape[0], test_data.shape[1], 1), test_label)[1])   
-    
-    #CNN
-    model_cnn = Sequential()
-    model_cnn.add(Conv1D(32, 3, activation='relu', input_shape=(vector_size, 1)))
-    model_cnn.add(MaxPooling1D(2))
-    model_cnn.add(Conv1D(64, 3, activation='relu'))
-    model_cnn.add(GlobalAveragePooling1D())
-    model_cnn.add(Dense(8, activation='softmax'))  #8 classes
+        #Dec. Tree
+        clf_dt = tree.DecisionTreeClassifier()
+        clf_dt.fit(train_data, train_label)
+        print("Decision Tree accuracy:", clf_dt.score(test_data, test_label), file=file)
+        
+        #LightGBM
+        clf_lgb = lgb.LGBMClassifier()
+        clf_lgb.fit(train_data, train_label)
+        print("LightGBM accuracy:", clf_lgb.score(test_data, test_label), file=file)
+        
+        #One-Hot Encoding for CNN
+        train_label -= 1
+        test_label -= 1
+        validation_label -= 1
+        train_label = to_categorical(train_label, num_classes=8)
+        test_label = to_categorical(test_label, num_classes=8)
+        validation_label = to_categorical(validation_label, num_classes=8)
 
-    model_cnn.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    model_cnn.fit(train_data.reshape(train_data.shape[0], train_data.shape[1], 1), train_label,
-                validation_data=(validation_data.reshape(validation_data.shape[0], validation_data.shape[1], 1), validation_label),
-                epochs=10, batch_size=32)
+        #CNN
+        model_cnn = Sequential()
+        model_cnn.add(Conv1D(32, 3, activation='relu', input_shape=(vector_size, 1)))
+        model_cnn.add(MaxPooling1D(2))
+        model_cnn.add(Conv1D(64, 3, activation='relu'))
+        model_cnn.add(GlobalAveragePooling1D())
+        model_cnn.add(Dense(8, activation='softmax'))  #8 classes
 
-    print("CNN accuracy:", model_cnn.evaluate(test_data.reshape(test_data.shape[0], test_data.shape[1], 1), test_label)[1])
+        model_cnn.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+        model_cnn.fit(train_data.reshape(train_data.shape[0], train_data.shape[1], 1), train_label,
+                    validation_data=(validation_data.reshape(validation_data.shape[0], validation_data.shape[1], 1), validation_label),
+                    epochs=10, batch_size=32)
 
+        print("CNN accuracy:", model_cnn.evaluate(test_data.reshape(test_data.shape[0], test_data.shape[1], 1), test_label)[1], file=file)
+
+    print("Testing Completed. Results can be found in" , output_file)
 #Run from Console
 if __name__ == "__main__":
     bit_num = sys.argv[1]
