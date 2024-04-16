@@ -24,10 +24,12 @@ def load_data(bit_num, dataset_path):
     validation_path = os.path.join(base_path, bit_dir, f"val_{bit_num}bit.txt")
     test_path = os.path.join(base_path, bit_dir, f"test_{bit_num}bit.txt")
 
+    #Invalid Raise Handling based on contents of files given
+
     train_data = np.genfromtxt(train_path, delimiter=',', invalid_raise=False)
     validation_data = np.genfromtxt(validation_path, delimiter=',', invalid_raise=False)
     test_data = np.genfromtxt(test_path, delimiter=',', invalid_raise=False)
-
+    
     # Handle missing labels by setting them to 0
     train_data = np.nan_to_num(train_data, nan=0)
     validation_data = np.nan_to_num(validation_data, nan=0)

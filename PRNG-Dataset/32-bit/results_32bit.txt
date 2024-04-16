@@ -1,0 +1,5 @@
+SVM accuracy: 0.1846
+kNN accuracy: 0.189
+Decision Tree accuracy: 0.1834
+LightGBM accuracy: 0.1874
+CNN accuracy: 0.18889999389648438
