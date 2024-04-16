@@ -9,7 +9,7 @@ import sys
 #ML Algorithm Imports
 from sklearn import svm, neighbors, tree
 from keras.models import Sequential
-from keras.layers import Dense, Conv1D, SimpleRNN, MaxPooling1D, GlobalAveragePooling1D
+from keras.layers import Dense, Conv1D, MaxPooling1D, GlobalAveragePooling1D
 from keras.utils import to_categorical
 import lightgbm as lgb
 
@@ -60,22 +60,22 @@ def models_run(bit_num, dataset_path):
     with open(output_file, "w") as file:
 
         #SVM
-        clf_svm = svm.SVC()
+        clf_svm = svm.SVC(kernel ='linear', C = 1.0)
         clf_svm.fit(train_data, train_label)
         print("SVM accuracy:", clf_svm.score(test_data, test_label), file=file)
 
         #kNN
-        clf_knn = neighbors.KNeighborsClassifier()
+        clf_knn = neighbors.KNeighborsClassifier(n_neighbors=5)
         clf_knn.fit(train_data, train_label)
         print("kNN accuracy:", clf_knn.score(test_data, test_label), file=file)
 
         #Dec. Tree
-        clf_dt = tree.DecisionTreeClassifier()
+        clf_dt = tree.DecisionTreeClassifier(max_depth=10, min_samples_split=2, min_samples_leaf=1)
         clf_dt.fit(train_data, train_label)
         print("Decision Tree accuracy:", clf_dt.score(test_data, test_label), file=file)
         
         #LightGBM
-        clf_lgb = lgb.LGBMClassifier()
+        clf_lgb = lgb.LGBMClassifier(num_leaves=31, max_depth=-1, learning_rate=0.1, n_estimators=100)
         clf_lgb.fit(train_data, train_label)
         print("LightGBM accuracy:", clf_lgb.score(test_data, test_label), file=file)
         
@@ -89,16 +89,16 @@ def models_run(bit_num, dataset_path):
 
         #CNN
         model_cnn = Sequential()
-        model_cnn.add(Conv1D(32, 3, activation='relu', input_shape=(vector_size, 1)))
+        model_cnn.add(Conv1D(64, 3, activation='relu', input_shape=(vector_size, 1)))
         model_cnn.add(MaxPooling1D(2))
-        model_cnn.add(Conv1D(64, 3, activation='relu'))
+        model_cnn.add(Conv1D(128, 3, activation='relu'))
         model_cnn.add(GlobalAveragePooling1D())
         model_cnn.add(Dense(8, activation='softmax'))  #8 classes
 
         model_cnn.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         model_cnn.fit(train_data.reshape(train_data.shape[0], train_data.shape[1], 1), train_label,
                     validation_data=(validation_data.reshape(validation_data.shape[0], validation_data.shape[1], 1), validation_label),
-                    epochs=10, batch_size=32)
+                    epochs=20, batch_size=64)
 
         print("CNN accuracy:", model_cnn.evaluate(test_data.reshape(test_data.shape[0], test_data.shape[1], 1), test_label)[1], file=file)
 
