@@ -1,5 +1,15 @@
-SVM accuracy: 0.2569256925692569
-kNN accuracy: 0.24152415241524153
-Decision Tree accuracy: 0.24822482248224823
-LightGBM accuracy: 0.2546254625462546
-CNN accuracy: 0.2477247714996338
+SVM training accuracy: 0.27452287690640886
+SVM testaccuracy: 0.2516251625162516
+SVM validation accuracy: 0.24624924984997
+kNN training accuracy: 0.4563713642803567
+kNN test accuracy: 0.24032403240324032
+kNN validation accuracy: 0.24134826965393077
+Decision Tree training accuracy: 0.383165263771981
+Decision Tree test accuracy: 0.2526252625262526
+Decision Tree validation accuracy: 0.2455491098219644
+LightGBM training accuracy: 0.6451537628135678
+LightGBM test accuracy: 0.2546254625462546
+LightGBM validation accuracy: 0.2470494098819764
+CNN training accuracy: 0.25180432200431824
+CNN test accuracy: 0.25222522020339966
+CNN validation accuracy: 0.24734947085380554

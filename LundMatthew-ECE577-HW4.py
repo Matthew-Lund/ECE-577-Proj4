@@ -62,22 +62,32 @@ def models_run(bit_num, dataset_path):
         #SVM
         clf_svm = svm.SVC(kernel ='linear', C = 1.0)
         clf_svm.fit(train_data, train_label)
-        print("SVM accuracy:", clf_svm.score(test_data, test_label), file=file)
+        print("SVM training accuracy:", clf_svm.score(train_data, train_label), file=file)
+        print("SVM test accuracy:", clf_svm.score(test_data, test_label), file=file)
+        print("SVM validation accuracy:", clf_svm.score(validation_data, validation_label), file=file)
 
         #kNN
         clf_knn = neighbors.KNeighborsClassifier(n_neighbors=5)
-        clf_knn.fit(train_data, train_label)
-        print("kNN accuracy:", clf_knn.score(test_data, test_label), file=file)
 
+        clf_knn.fit(train_data, train_label)
+        print("kNN training accuracy:", clf_knn.score(train_data, train_label), file=file)
+        print("kNN test accuracy:", clf_knn.score(test_data, test_label), file=file)
+        print("kNN validation accuracy:", clf_knn.score(validation_data, validation_label), file=file)
+        
         #Dec. Tree
         clf_dt = tree.DecisionTreeClassifier(max_depth=10, min_samples_split=2, min_samples_leaf=1)
         clf_dt.fit(train_data, train_label)
-        print("Decision Tree accuracy:", clf_dt.score(test_data, test_label), file=file)
-        
+        print("Decision Tree training accuracy:", clf_dt.score(train_data, train_label), file=file)
+        print("Decision Tree test accuracy:", clf_dt.score(test_data, test_label), file=file)
+        print("Decision Tree validation accuracy:", clf_dt.score(validation_data, validation_label), file=file)
+
         #LightGBM
         clf_lgb = lgb.LGBMClassifier(num_leaves=31, max_depth=-1, learning_rate=0.1, n_estimators=100)
         clf_lgb.fit(train_data, train_label)
-        print("LightGBM accuracy:", clf_lgb.score(test_data, test_label), file=file)
+        print("LightGBM training accuracy:", clf_lgb.score(train_data, train_label), file=file)
+        print("LightGBM test accuracy:", clf_lgb.score(test_data, test_label), file=file)
+        print("LightGBM validation accuracy:", clf_lgb.score(validation_data, validation_label), file=file)
+        
         
         #One-Hot Encoding for CNN
         train_label -= 1
@@ -100,9 +110,13 @@ def models_run(bit_num, dataset_path):
                     validation_data=(validation_data.reshape(validation_data.shape[0], validation_data.shape[1], 1), validation_label),
                     epochs=20, batch_size=64)
 
-        print("CNN accuracy:", model_cnn.evaluate(test_data.reshape(test_data.shape[0], test_data.shape[1], 1), test_label)[1], file=file)
+        print("CNN training accuracy:", model_cnn.evaluate(train_data.reshape(train_data.shape[0], train_data.shape[1], 1), train_label)[1], file=file)
+        print("CNN test accuracy:", model_cnn.evaluate(test_data.reshape(test_data.shape[0], test_data.shape[1], 1), test_label)[1], file=file)
+        print("CNN validation accuracy:", model_cnn.evaluate(validation_data.reshape(validation_data.shape[0], validation_data.shape[1], 1), validation_label)[1], file=file)
 
     print("Testing Completed. Results can be found in" , output_file)
+
+
 #Run from Console
 if __name__ == "__main__":
     bit_num = sys.argv[1]
