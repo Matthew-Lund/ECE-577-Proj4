@@ -11,8 +11,8 @@ from keras.layers import Dense, Conv1D, Flatten, SimpleRNN, MaxPooling1D, Global
 from keras.utils import to_categorical
 
 #Vectors and Data arrrays for each section of bits
-def load_data(bit_num):
-    base_path = 'C:\\Users\\Matthew\\OneDrive\\Documents\\ECE577\\ECE-577-Proj4\\PRNG-Dataset'
+def load_data(bit_num, dataset_path):
+    base_path = dataset_path
     
     bit_dir = f"{bit_num}-bit"
     
@@ -43,9 +43,9 @@ def load_data(bit_num):
 
 #Run the models and get accuracy numbers
     
-def models_run(bit_num):
+def models_run(bit_num, dataset_path):
     print("Testing", bit_num,"- bit Data")
-    train_data, train_label, validation_data, validation_label, test_data, test_label, vector_size = load_data(bit_num)
+    train_data, train_label, validation_data, validation_label, test_data, test_label, vector_size = load_data(bit_num, dataset_path)
     
     #SVM
     clf_svm = svm.SVC()
@@ -73,7 +73,7 @@ def models_run(bit_num):
     #RNN
     model_rnn = Sequential()
     model_rnn.add(SimpleRNN(units=64, activation='relu', input_shape=(vector_size, 1)))
-    model_rnn.add(Dense(units=8, activation='softmax'))  # Assuming 8 classes
+    model_rnn.add(Dense(units=8, activation='softmax'))  #8 classes
     model_rnn.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     model_rnn.fit(train_data.reshape(train_data.shape[0], train_data.shape[1], 1), train_label, epochs=10, batch_size=32)
     print("RNN accuracy:", model_rnn.evaluate(test_data.reshape(test_data.shape[0], test_data.shape[1], 1), test_label)[1])   
@@ -84,7 +84,7 @@ def models_run(bit_num):
     model_cnn.add(MaxPooling1D(2))
     model_cnn.add(Conv1D(64, 3, activation='relu'))
     model_cnn.add(GlobalAveragePooling1D())
-    model_cnn.add(Dense(8, activation='softmax'))  # Assuming 8 classes
+    model_cnn.add(Dense(8, activation='softmax'))  #8 classes
 
     model_cnn.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     model_cnn.fit(train_data.reshape(train_data.shape[0], train_data.shape[1], 1), train_label,
@@ -96,5 +96,7 @@ def models_run(bit_num):
 #Run from Console
 if __name__ == "__main__":
     bit_num = sys.argv[1]
+    dataset_path = sys.argv[2]
+
     #Match this number to filepath active for accurate printing results
-    models_run(bit_num)
+    models_run(bit_num, dataset_path)
